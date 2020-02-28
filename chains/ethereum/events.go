@@ -14,9 +14,18 @@ import (
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 )
 
+func printLog(log ethtypes.Log) {
+	js, _ := log.MarshalJSON()
+
+	log15.Info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	log15.Info(string(js))
+
+}
+
 func (l *Listener) handleTransferEvent(eventI interface{}) msg.Message {
 	log15.Debug("Handling deposit proposal event")
 	event := eventI.(ethtypes.Log)
+	printLog(event)
 
 	contractAbi, err := abi.JSON(strings.NewReader(emitter.EmitterABI))
 	if err != nil {
@@ -48,6 +57,7 @@ func (l *Listener) handleTransferEvent(eventI interface{}) msg.Message {
 
 func (l *Listener) handleTestDeposit(eventI interface{}) msg.Message {
 	event := eventI.(ethtypes.Log)
+	printLog(event)
 	data := ethcrypto.Keccak256Hash(event.Topics[0].Bytes()).Bytes()
 	return msg.Message{
 		Type:     msg.DepositAssetType,
