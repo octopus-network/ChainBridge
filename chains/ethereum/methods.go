@@ -43,6 +43,19 @@ func (w *Writer) createDepositProposal(m msg.Message) bool {
 		return false
 	}
 
+	status, checkErr := w.GetDepositStatus(m.Source.Big(), u32toBigInt(m.DepositId))
+
+	if checkErr != nil {
+		log15.Info("Get deposit status failed", "error", checkErr)
+		return false
+	}
+
+	if status != 0 {
+		// Block Tx
+		log15.Error("Deposit already submitted", "error")
+		return false
+	}
+
 	types := []string{"bytes"}
 	values := []interface{}{
 		"0x935F7770265D0797B621c49A5215849c333Cc3ce",
