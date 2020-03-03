@@ -17,8 +17,8 @@ import (
 func printLog(log ethtypes.Log) {
 	js, _ := log.MarshalJSON()
 
-	log15.Info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	log15.Info(string(js))
+	log15.Debug("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	log15.Debug(string(js))
 
 }
 

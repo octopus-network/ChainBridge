@@ -15,10 +15,11 @@ import (
 )
 
 var testConfig = &Config{
-	endpoint: TestEndpoint,
-	receiver: TestCentrifugeContractAddress,
-	keystore: keystore.TestKeyStoreMap[keystore.AliceKey],
-	from:     keystore.AliceKey,
+	endpoint:      TestEndpoint,
+	receiver:      TestCentrifugeContractAddress,
+	keystore:      keystore.TestKeyStoreMap[keystore.AliceKey],
+	subscriptions: []string{"DepositAsset(address,bytes32)", "NFTTransfer(uint256,uint256,address,address,uint256,bytes)", "ERCTransfer(uint256,uint256,address,uint256,address)"},
+	from:          keystore.AliceKey,
 }
 
 var randomHash = []byte{0x12, 0x34}
