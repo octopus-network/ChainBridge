@@ -8,8 +8,6 @@ import (
 
 	emitter "github.com/ChainSafe/ChainBridgeV2/contracts/Emitter"
 	"github.com/ChainSafe/ChainBridgeV2/keystore"
-	msg "github.com/ChainSafe/ChainBridgeV2/message"
-	"github.com/ChainSafe/ChainBridgeV2/router"
 
 	ethcmn "github.com/ethereum/go-ethereum/common"
 )
@@ -70,40 +68,24 @@ func TestEvent(t *testing.T) {
 
 func TestListener(t *testing.T) {
 
-	conn := newLocalConnection(t, TestCentrifugeContractAddress)
+	conn := NewConnection(testConfig)
+	err := conn.Connect()
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer conn.Close()
 
 	emitterContract := createTestEmitterContract(t, conn)
 	listener := NewListener(conn, testConfig)
 	listener.SetEmitterContract(emitterContract)
 
-	err := listener.Start()
+	err = listener.Start()
 
 	if err != nil {
 		t.Fatalf("Listener unable to start.")
 	}
 
-	m := msg.Message{
-		Source:    sourceChain,
-		Type:      msg.ExecuteDepositType,
-		To:        TestAddress.Bytes(),
-		DepositId: depositId,
-	}
-
-	rcvr := createTestReceiverContract(t, conn)
-	w := NewWriter(conn, testConfig)
-	w.SetReceiverContract(rcvr)
-
-	r := router.NewRouter()
-	r.Listen(msg.EthereumId, w)
-	listener.SetRouter(r)
-
-	ok := w.ResolveMessage(m)
-	if !ok {
-		t.Fatal("Transaction failed")
-	}
-
-	//centrifugeContract := createTestCentrifugeContract(t, conn)
+	TestWriter_createDepositProposal(t)
 
 }
 

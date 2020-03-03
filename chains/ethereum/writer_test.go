@@ -17,6 +17,7 @@ import (
 var testConfig = &Config{
 	endpoint:      TestEndpoint,
 	receiver:      TestCentrifugeContractAddress,
+	emitter:       TestReceiverContractAddress,
 	keystore:      keystore.TestKeyStoreMap[keystore.AliceKey],
 	subscriptions: []string{"DepositAsset(address,bytes32)", "NFTTransfer(uint256,uint256,address,address,uint256,bytes)", "ERCTransfer(uint256,uint256,address,uint256,address)"},
 	from:          keystore.AliceKey,
