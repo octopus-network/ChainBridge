@@ -52,13 +52,19 @@ func (l *Listener) Start() error {
 	for _, subscription := range l.cfg.subscriptions {
 		sub := subscription
 		switch sub {
-		case ErcTransferSignature, NftTransferSignature:
-			err := l.RegisterEventHandler(sub, l.handleTransferEvent)
+		case NftTransferSignature:
+			err := l.RegisterEventHandler(sub, l.handleNftTransferEvent)
 			if err != nil {
 				log15.Error("failed to register event handler", "err", err)
 			}
-		case DepositAssetSignature:
-			err := l.RegisterEventHandler(sub, l.handleTestDeposit)
+		case ErcTransferSignature:
+			err := l.RegisterEventHandler(sub, l.handleErcTransferEvent)
+			if err != nil {
+				log15.Error("failed to register event handler", "err", err)
+			}
+		case DepositProposalSignature:
+			log15.Trace("inside deposit prosoposal vote")
+			err := l.RegisterEventHandler(sub, l.handleVoteEvent)
 			if err != nil {
 				log15.Error("failed to register event handler", "err", err)
 			}
@@ -87,7 +93,13 @@ func (l *Listener) buildQuery(contract ethcommon.Address, sig EventSig) eth.Filt
 // Handler will be called for every instance of event.
 func (l *Listener) RegisterEventHandler(subscription string, handler chains.EvtHandlerFn) error {
 	evt := EventSig(subscription)
-	query := l.buildQuery(l.cfg.emitter, evt)
+	log15.Trace("Event signatures", "sig", evt, "topic", evt.GetTopic().Hex())
+	var query eth.FilterQuery
+	if subscription == DepositProposalSignature {
+		query = l.buildQuery(l.cfg.receiver, evt)
+	} else {
+		query = l.buildQuery(l.cfg.emitter, evt)
+	}
 	eventSubscription, err := l.conn.subscribeToEvent(query)
 	if err != nil {
 		return err
@@ -104,7 +116,6 @@ func (l *Listener) watchEvent(eventSubscription *Subscription, handler func(inte
 	for {
 		select {
 		case evt := <-eventSubscription.ch:
-			log15.Trace("Event found")
 			m := handler(evt)
 			err := l.router.Send(m)
 			if err != nil {

@@ -7,14 +7,14 @@ import (
 	"strings"
 
 	emitter "github.com/ChainSafe/ChainBridgeV2/contracts/Emitter"
+	receiver "github.com/ChainSafe/ChainBridgeV2/contracts/Receiver"
 	msg "github.com/ChainSafe/ChainBridgeV2/message"
 	"github.com/ChainSafe/log15"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 )
 
-func (l *Listener) handleTransferEvent(eventI interface{}) msg.Message {
+func (l *Listener) handleNftTransferEvent(eventI interface{}) msg.Message {
 	log15.Debug("Handling deposit proposal event")
 	event := eventI.(ethtypes.Log)
 
@@ -46,11 +46,58 @@ func (l *Listener) handleTransferEvent(eventI interface{}) msg.Message {
 	return msg
 }
 
-func (l *Listener) handleTestDeposit(eventI interface{}) msg.Message {
+func (l *Listener) handleErcTransferEvent(eventI interface{}) msg.Message {
+	log15.Debug("Handling deposit proposal event")
 	event := eventI.(ethtypes.Log)
-	data := ethcrypto.Keccak256Hash(event.Topics[0].Bytes()).Bytes()
+
+	contractAbi, err := abi.JSON(strings.NewReader(emitter.EmitterABI))
+	if err != nil {
+		log15.Error("Unable to decode event", err)
+	}
+
+	var ercEvent emitter.EmitterERCTransfer
+	err = contractAbi.Unpack(&ercEvent, "ERCTransfer", event.Data)
+	if err != nil {
+		log15.Error("Unable to unpack ERCTransfer", err)
+	}
+
+	// Capture indexed values
+	ercEvent.DestChain = event.Topics[1].Big()
+	ercEvent.DepositId = event.Topics[2].Big()
+
+	msg := msg.Message{
+		Type:        msg.CreateDepositProposalType,
+		Source:      l.cfg.id,
+		Destination: msg.ChainId(uint8(ercEvent.DestChain.Uint64())),
+		// TODO: Can we safely downsize?
+		DepositId: uint32(ercEvent.DepositId.Uint64()),
+		To:        ercEvent.To.Bytes(),
+		// Metadata:  ercEvent.Data,
+	}
+
+	return msg
+}
+
+func (l *Listener) handleVoteEvent(eventI interface{}) msg.Message {
+	log15.Debug("Handling vote event")
+	event := eventI.(ethtypes.Log)
+
+	contractAbi, err := abi.JSON(strings.NewReader(string(receiver.ReceiverABI)))
+	if err != nil {
+		log15.Error("Unable to decode event", err)
+	}
+
+	var depositEvent receiver.ReceiverDepositProposalCreated
+	err = contractAbi.Unpack(&depositEvent, "DepositProposalCreated", event.Data)
+	if err != nil {
+		log15.Error("Unable to unpack DepositProposalCreated", err)
+	}
+
 	return msg.Message{
-		Type:     msg.DepositAssetType,
-		Metadata: data,
+		Source:      msg.ChainId(uint8(depositEvent.OriginChain.Uint64())), // Todo handle safely
+		Destination: l.cfg.id,                                              // We are reading from the receiver, must write to the same contract
+		Type:        msg.VoteDepositProposalType,
+		DepositId:   uint32(depositEvent.DepositId.Int64()),
+		Metadata:    depositEvent.Hash[:],
 	}
 }

@@ -131,7 +131,7 @@ func run(ctx *cli.Context) error {
 				Endpoint: chain.Endpoint,
 				From:     chain.From,
 				// TODO remove this in favour of OPTS when config PR lands
-				Subscriptions: ethereum.BuildEventSubscriptions([]string{"DepositAsset", "NftTransfer", "ErcTransfer"}),
+				Subscriptions: ethereum.BuildEventSubscriptions([]string{"DepositAsset", "NftTransfer", "ErcTransfer", "DepositProposalCreated"}),
 				Keystore:      ks,
 				Opts:          chain.Opts,
 			})
@@ -141,7 +141,7 @@ func run(ctx *cli.Context) error {
 				Endpoint: chain.Endpoint,
 				From:     chain.From,
 				// TODO remove this in favour of OPTS when config PR lands
-				Subscriptions: ethereum.BuildEventSubscriptions([]string{"DepositAsset", "NftTransfer", "ErcTransfer"}),
+				Subscriptions: ethereum.BuildEventSubscriptions([]string{"DepositAsset", "NftTransfer", "ErcTransfer", "DepositProposalCreated"}),
 				Keystore:      ks,
 				Opts:          chain.Opts,
 			})
