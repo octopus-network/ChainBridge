@@ -8,9 +8,21 @@ import "../interfaces/IDepositHandler.sol";
 contract ERC20Handler is IERC20Handler, IDepositHandler, ERC20Safe {
     address public _bridgeAddress;
 
+    mapping (address => bool) public whitelist;
+
+    bool whitelistActive;
+
+
     modifier _onlyBridge() {
         require(msg.sender == _bridgeAddress);
         _;
+    }
+
+    modifier _whiteList() {
+        if whitelistActive {
+            require(whitelist[msg.sender] == true)
+        }
+
     }
 
     constructor(address bridgeAddress) public {
