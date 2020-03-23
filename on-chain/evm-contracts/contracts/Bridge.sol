@@ -93,6 +93,10 @@ contract Bridge {
     mapping(uint => mapping(uint => CentrifugeAssetDepositRecord)) public _centrifugeDepositRecords;
     // ChainId => DepositNonce => Proposal
     mapping(uint => mapping(uint => DepositProposal)) public _depositProposals;
+    // OriginChainTokenAddress => isWhitelisted
+    mapping (address => bool) public _tokenWhitelist;
+
+    bool whitelistActive;
 
     event GenericDeposited(uint indexed destinationChainID, uint indexed depositNonce);
     event ERC20Deposited(uint indexed destinationChainID, uint indexed depositNonce);
@@ -108,6 +112,13 @@ contract Bridge {
     modifier _onlyRelayers() {
         IRelayer relayerContract = IRelayer(_relayerContract);
         require(relayerContract.isRelayer(msg.sender), "sender must be a relayer");
+        _;
+    }
+
+    modifier _whitelist(address originChainTokenAddress) {
+        if whitelistActive {
+            require(whitelist[originChainTokenAddress] == true)
+        }
         _;
     }
 
@@ -224,7 +235,7 @@ contract Bridge {
         address      destinationChainHandlerAddress,
         address      destinationRecipientAddress,
         bytes memory data
-    ) public {
+    ) public _whitelist(originChainContractAddress) {
         uint depositNonce = ++_depositCounts[destinationChainID];
 
         _genericDepositRecords[destinationChainID][depositNonce] = GenericDepositRecord(
@@ -246,7 +257,7 @@ contract Bridge {
         address destinationChainHandlerAddress,
         address destinationRecipientAddress,
         uint    amount
-    ) public {
+    ) public _whitelist(originChainTokenAddress){
         IERC20Handler erc20Handler = IERC20Handler(originChainHandlerAddress);
         erc20Handler.depositERC20(originChainTokenAddress, msg.sender, amount);
 
@@ -272,7 +283,7 @@ contract Bridge {
         address      destinationRecipientAddress,
         uint         tokenID,
         bytes memory data
-    ) public {
+    ) public _whitelist(originChainTokenAddress) { 
         IERC721Handler erc721Handler = IERC721Handler(originChainHandlerAddress);
         erc721Handler.depositERC721(originChainTokenAddress, msg.sender, tokenID);
 
@@ -298,7 +309,7 @@ contract Bridge {
         address destinationChainHandlerAddress,
         address destinationRecipientAddress,
         bytes32 metaDataHash
-    ) public {
+    ) public _whitelist(originChainContractAddress) {
         ICentrifugeAssetHandler centrifugeAssetHandler = ICentrifugeAssetHandler(originChainHandlerAddress);
         centrifugeAssetHandler.depositAsset(metaDataHash);
 

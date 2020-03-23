@@ -8,8 +8,6 @@ import "../interfaces/IDepositHandler.sol";
 contract ERC20Handler is IERC20Handler, IDepositHandler, ERC20Safe {
     address public _bridgeAddress;
 
-    mapping (address => bool) public whitelist;
-
     bool whitelistActive;
 
 
