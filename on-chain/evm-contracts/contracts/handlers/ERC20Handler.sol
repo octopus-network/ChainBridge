@@ -16,13 +16,6 @@ contract ERC20Handler is IERC20Handler, IDepositHandler, ERC20Safe {
         _;
     }
 
-    modifier _whiteList() {
-        if whitelistActive {
-            require(whitelist[msg.sender] == true)
-        }
-
-    }
-
     constructor(address bridgeAddress) public {
         _bridgeAddress = bridgeAddress;
     }

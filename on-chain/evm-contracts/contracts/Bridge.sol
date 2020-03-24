@@ -26,6 +26,8 @@ contract Bridge {
     enum DepositProposalStatus {Inactive, Active, Denied, Passed, Transferred}
     string[] _depositProposalStatusStrings = ["inactive", "active", "denied", "passed", "transferred"];
 
+    enum WhitelistTokenAddressProposalStatus {Inactive, Active, Denied, Passed, Blacklisted}
+
     struct GenericDepositRecord {
         address _originChainTokenAddress;
         address _originChainHandlerAddress;
@@ -64,22 +66,31 @@ contract Bridge {
     }
 
     struct DepositProposal {
-        uint _destinationChainID;
-        uint _depositNonce;
-        bytes32 _dataHash;
-        mapping(address => bool) _votes;
-        uint _numYes;
-        uint _numNo;
-        DepositProposalStatus _status;
+        uint                        _destinationChainID;
+        uint                        _depositNonce;
+        bytes32                     _dataHash;
+        mapping(address => bool)    _votes;
+        uint                        _numYes;
+        uint                        _numNo;
+        DepositProposalStatus       _status;
     }
 
     struct RelayerThresholdProposal {
-        uint                             _proposedValue;
-        mapping(address => bool)         _votes;
-        uint                             _numYes;
-        uint                             _numNo;
-        RelayerThresholdProposalStatus _status;
+        uint                            _proposedValue;
+        mapping(address => bool)        _votes;
+        uint                            _numYes;
+        uint                            _numNo;
+        RelayerThresholdProposalStatus  _status;
     }
+
+    struct WhitelistTokenAddressProposal {
+        address                             _proposedTokenContractAddress;
+        mapping(address => bool)            _votes;
+        uint                                _numYes;
+        uint                                _numNo;
+        WhitelistTokenAddressProposalStatus   _status;
+    }
+
 
     // chainID => number of deposits
     mapping(uint => uint) public _depositCounts;
@@ -116,8 +127,8 @@ contract Bridge {
     }
 
     modifier _whitelist(address originChainTokenAddress) {
-        if whitelistActive {
-            require(whitelist[originChainTokenAddress] == true)
+        if (whitelistActive) {
+            require(_tokenWhitelist[originChainTokenAddress] == true, "token contract address must be whitelisted");
         }
         _;
     }
@@ -283,7 +294,7 @@ contract Bridge {
         address      destinationRecipientAddress,
         uint         tokenID,
         bytes memory data
-    ) public _whitelist(originChainTokenAddress) { 
+    ) public _whitelist(originChainTokenAddress) {
         IERC721Handler erc721Handler = IERC721Handler(originChainHandlerAddress);
         erc721Handler.depositERC721(originChainTokenAddress, msg.sender, tokenID);
 
