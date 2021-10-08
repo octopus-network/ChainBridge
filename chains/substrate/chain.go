@@ -31,6 +31,7 @@ import (
 	metrics "github.com/ChainSafe/chainbridge-utils/metrics/types"
 	"github.com/ChainSafe/chainbridge-utils/msg"
 	"github.com/ChainSafe/log15"
+	gsrpc "github.com/centrifuge/go-substrate-rpc-client"
 )
 
 var _ core.Chain = &Chain{}
@@ -142,4 +143,8 @@ func (c *Chain) Name() string {
 
 func (c *Chain) Stop() {
 	close(c.stop)
+}
+
+func (c *Chain) GetSubstrateAPI() *gsrpc.SubstrateAPI {
+	return c.conn.api
 }

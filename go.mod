@@ -1,6 +1,6 @@
 module github.com/ChainSafe/ChainBridge
 
-go 1.15
+go 1.16
 
 require (
 	github.com/ChainSafe/chainbridge-substrate-events v0.0.0-20200715141113-87198532025e

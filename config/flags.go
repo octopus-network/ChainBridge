@@ -92,6 +92,10 @@ var (
 		Usage:       "Specify the network to use for the address encoding (substrate/polkadot/centrifuge)",
 		DefaultText: "substrate",
 	}
+	FromBlockNumberFlag = &cli.StringFlag{
+			Name: "fromBlock",
+			Usage: "block number",
+	}
 )
 
 // Test Setting Flags
