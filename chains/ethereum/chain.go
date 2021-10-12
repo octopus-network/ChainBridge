@@ -217,6 +217,10 @@ func (c *Chain) GetCallOpts() *bind.CallOpts {
 	return c.conn.CallOpts()
 }
 
+func (c *Chain) GetLatestHeaderBlock() (*big.Int, error) {
+	return c.conn.LatestBlock()
+}
+
 func (c *Chain) Name() string {
 	return c.cfg.Name
 }

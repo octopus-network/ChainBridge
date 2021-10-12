@@ -239,6 +239,10 @@ func parseCFGToWCFGEvents(ethChain *ethereum.Chain, bridgeContract *Bridge.Bridg
 		return nil, fmt.Errorf("failed to get stuff", resp.Code)
 	}
 
+	latestBlock, err := ethChain.GetLatestHeaderBlock()
+	if err != nil {
+		return nil, err
+	}
 	var events []FungibleTransferEvent
 	for i:=0; i < len(resp.Data.Events); i++ {
 		var eventParams []map[string]interface{}
@@ -265,12 +269,14 @@ func parseCFGToWCFGEvents(ethChain *ethereum.Chain, bridgeContract *Bridge.Bridg
 			return nil, err
 		}
 
+		//log.Info("EthProp", "nonce", propNonce, "status", ethProp.Status, "block", ethProp.ProposedBlock.String())
+
 		events = append(events, FungibleTransferEvent{
 			Nonce:  propNonce,
 			Amount: propAmountInt,
 			Dest:   propDest,
 			Sender: propSender,
-			Failed: ethProp.Status == 4,
+			Failed: ethProp.Status == 4 || (ethProp.Status == 1 && (big.NewInt(0).Sub(latestBlock, ethProp.ProposedBlock).Cmp(big.NewInt(100)) > 0)),
 			Status: ethProp.Status,
 		})
 	}
