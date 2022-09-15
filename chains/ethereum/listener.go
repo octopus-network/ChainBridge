@@ -171,7 +171,7 @@ func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
 		return err
 	}
 
-	if l.cfg.mainChainId.Cmp(mainChainId) == 0 {
+	if l.cfg.mainChainId.Cmp(mainChainId) != 0 {
 		panic(fmt.Errorf("chainId (%d) doesnt match with config defined mainChainId (%d)", mainChainId, l.cfg.mainChainId))
 	}
 

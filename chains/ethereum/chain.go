@@ -145,7 +145,7 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 		return nil, err
 	}
 
-	if cfg.mainChainId.Cmp(mainChainId) == 0 {
+	if cfg.mainChainId.Cmp(mainChainId) != 0 {
 		panic(fmt.Errorf("chainId (%d) doesnt match with config defined mainChainId (%d)", mainChainId, cfg.mainChainId))
 	}
 
