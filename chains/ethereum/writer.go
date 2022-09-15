@@ -63,7 +63,7 @@ func (w *writer) ResolveMessage(m msg.Message) bool {
 		return false
 	}
 
-	if w.cfg.mainChainId != mainChainId {
+	if w.cfg.mainChainId.Cmp(mainChainId) == 0 {
 		panic(fmt.Errorf("chainId (%d) doesnt match with config defined mainChainId (%d)", mainChainId, w.cfg.mainChainId))
 	}
 
