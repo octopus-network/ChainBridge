@@ -166,6 +166,15 @@ func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
 		return fmt.Errorf("unable to Filter Logs: %w", err)
 	}
 
+	mainChainId, err := l.conn.Client().ChainID(context.Background())
+	if err != nil {
+		return err
+	}
+
+	if l.cfg.mainChainId != mainChainId {
+		panic(fmt.Errorf("chainId (%d) doesnt match with config defined mainChainId (%d)", mainChainId, l.cfg.mainChainId))
+	}
+
 	// read through the log events and handle their deposit event if handler is recognized
 	for _, log := range logs {
 		var m msg.Message

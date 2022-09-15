@@ -6,12 +6,11 @@ package ethereum
 import (
 	"errors"
 	"fmt"
-	"math/big"
-
 	utils "github.com/ChainSafe/ChainBridge/shared/ethereum"
 	"github.com/centrifuge/chainbridge-utils/core"
 	"github.com/centrifuge/chainbridge-utils/msg"
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 )
 
 const DefaultGasLimit = 6721975
@@ -31,6 +30,7 @@ var (
 	HttpOpt               = "http"
 	StartBlockOpt         = "startBlock"
 	BlockConfirmationsOpt = "blockConfirmations"
+	MainChainIdOpt        = "mainChainId"
 )
 
 // Config encapsulates all necessary parameters in ethereum compatible forms
@@ -52,6 +52,7 @@ type Config struct {
 	http                   bool // Config for type of connection
 	startBlock             *big.Int
 	blockConfirmations     *big.Int
+	mainChainId            *big.Int
 }
 
 // parseChainConfig uses a core.ChainConfig to construct a corresponding Config
@@ -75,6 +76,7 @@ func parseChainConfig(chainCfg *core.ChainConfig) (*Config, error) {
 		http:                   false,
 		startBlock:             big.NewInt(0),
 		blockConfirmations:     big.NewInt(0),
+		mainChainId:            big.NewInt(0),
 	}
 
 	if contract, ok := chainCfg.Opts[BridgeOpt]; ok && contract != "" {
@@ -157,6 +159,18 @@ func parseChainConfig(chainCfg *core.ChainConfig) (*Config, error) {
 	} else {
 		config.blockConfirmations = big.NewInt(DefaultBlockConfirmations)
 		delete(chainCfg.Opts, BlockConfirmationsOpt)
+	}
+
+	if mainChainId, ok := chainCfg.Opts[MainChainIdOpt]; ok && mainChainId != "" {
+		val := big.NewInt(0)
+		_, pass := val.SetString(mainChainId, 10)
+		if !pass {
+			return nil, fmt.Errorf("unable to parse %s", MainChainIdOpt)
+		}
+		config.mainChainId = val
+		delete(chainCfg.Opts, MainChainIdOpt)
+	} else {
+		return nil, fmt.Errorf("unable to parse %s", MainChainIdOpt)
 	}
 
 	if len(chainCfg.Opts) != 0 {
