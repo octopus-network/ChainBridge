@@ -160,6 +160,12 @@ func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
 	l.log.Debug("Querying block for deposit events", "block", latestBlock)
 	query := buildQuery(l.cfg.bridgeContract, utils.Deposit, latestBlock, latestBlock)
 
+	// querying for logs
+	logs, err := l.conn.Client().FilterLogs(context.Background(), query)
+	if err != nil {
+		return fmt.Errorf("unable to Filter Logs: %w", err)
+	}
+
 	mainChainId, err := l.conn.Client().ChainID(context.Background())
 	if err != nil {
 		return err
@@ -167,12 +173,6 @@ func (l *listener) getDepositEventsForBlock(latestBlock *big.Int) error {
 
 	if l.cfg.mainChainId != mainChainId {
 		panic(fmt.Errorf("chainId (%d) doesnt match with config defined mainChainId (%d)", mainChainId, l.cfg.mainChainId))
-	}
-
-	// querying for logs
-	logs, err := l.conn.Client().FilterLogs(context.Background(), query)
-	if err != nil {
-		return fmt.Errorf("unable to Filter Logs: %w", err)
 	}
 
 	// read through the log events and handle their deposit event if handler is recognized
