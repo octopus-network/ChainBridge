@@ -21,6 +21,7 @@ The writer recieves the message and creates a proposals on-chain. Once a proposa
 package ethereum
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 
@@ -137,6 +138,15 @@ func InitializeChain(chainCfg *core.ChainConfig, logger log15.Logger, sysErr cha
 
 	if chainId != uint8(chainCfg.Id) {
 		return nil, fmt.Errorf("chainId (%d) and configuration chainId (%d) do not match", chainId, chainCfg.Id)
+	}
+
+	mainChainId, err := conn.Client().ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	if cfg.mainChainId != mainChainId {
+		panic(fmt.Errorf("chainId (%d) doesnt match with config defined mainChainId (%d)", mainChainId, cfg.mainChainId))
 	}
 
 	erc20HandlerContract, err := erc20Handler.NewERC20Handler(cfg.erc20HandlerContract, conn.Client())
