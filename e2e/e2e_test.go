@@ -23,8 +23,8 @@ import (
 	log "github.com/ChainSafe/log15"
 	"github.com/centrifuge/chainbridge-utils/core"
 	"github.com/centrifuge/chainbridge-utils/msg"
-	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 const EthAChainId = msg.ChainId(0)
@@ -39,18 +39,18 @@ type test struct {
 }
 
 var tests = []test{
-	{"Erc20ToSubstrate", testErc20ToSubstrate},
-	{"SubstrateToErc20", testSubstrateToErc20},
-	{"Erc20toErc20", testErc20ToErc20},
-	{"Erc20 to Substrate Round Trip", testErc20SubstrateRoundTrip},
+	// {"Erc20ToSubstrate", testErc20ToSubstrate},
+	// {"SubstrateToErc20", testSubstrateToErc20},
+	// {"Erc20toErc20", testErc20ToErc20},
+	// {"Erc20 to Substrate Round Trip", testErc20SubstrateRoundTrip},
 
-	{"Erc721 to Substrate Round Trip", testErc721ToSubstrateRoundTrip},
-	{"Erc721 to Erc721 Round Trip", testErc721EthToEthRoundTrip},
+	// {"Erc721 to Substrate Round Trip", testErc721ToSubstrateRoundTrip},
+	// {"Erc721 to Erc721 Round Trip", testErc721EthToEthRoundTrip},
 
 	{"SubstrateHashToGenericHandler", testSubstrateHashToGenericHandler},
-	{"Eth to Eth HashToGenericHandler", testEthereumHashToGenericHandler},
+	// {"Eth to Eth HashToGenericHandler", testEthereumHashToGenericHandler},
 
-	{"Three chain with parallel submission", testThreeChainsParallel},
+	// {"Three chain with parallel submission", testThreeChainsParallel},
 }
 
 type testContext struct {
@@ -233,14 +233,18 @@ func Test_ThreeRelayers(t *testing.T) {
 	subClient := subtest.CreateClient(t, sub.AliceKp.AsKeyringPair(), sub.TestSubEndpoint)
 
 	// First lookup the substrate resource IDs
-	var rawRId types.Bytes32
-	subtest.QueryConst(t, subClient, "Example", "NativeTokenId", &rawRId)
-	subErc20ResourceId := msg.ResourceIdFromSlice(rawRId[:])
-	subtest.QueryConst(t, subClient, "Example", "Erc721Id", &rawRId)
-	subErc721ResourceId := msg.ResourceIdFromSlice(rawRId[:])
-	subtest.QueryConst(t, subClient, "Example", "HashId", &rawRId)
-	genericHashResourceId := msg.ResourceIdFromSlice(rawRId[:])
+	// var rawRId types.Bytes32
+	// subtest.QueryConst(t, subClient, "Example", "NativeTokenId", &rawRId)
+	// subErc20ResourceId := msg.ResourceIdFromSlice(rawRId[:])
+	// subtest.QueryConst(t, subClient, "Example", "Erc721Id", &rawRId)
+	// subErc721ResourceId := msg.ResourceIdFromSlice(rawRId[:])
+	// subtest.QueryConst(t, subClient, "Example", "HashId", &rawRId)
+	// genericHashResourceId := msg.ResourceIdFromSlice(rawRId[:])
 
+	subErc20ResourceId := msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000c76ebe4a02bbc34786d860b355f5a5ce00"))
+	subErc721ResourceId := msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000e389d61c11e5fe32ec1735b3cd38c69501"))
+	genericHashResourceId := msg.ResourceIdFromSlice(hexutil.MustDecode("0x000000000000000000000000000000f44be64d2de895454c3467021928e55e01"))
+	
 	// Base setup for ethA
 	contractsA := eth.DeployTestContracts(t, ethClientA, eth.EthAEndpoint, EthAChainId, big.NewInt(int64(threshold)))
 	// Base setup for ethB ERC20 - handler can mint
