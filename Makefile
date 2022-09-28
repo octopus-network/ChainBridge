@@ -1,7 +1,7 @@
 PROJECTNAME=$(shell basename "$(PWD)")
 VERSION=-ldflags="-X main.Version=$(shell git describe --tags)"
 SOL_DIR=./solidity
-ARCH=$(shell arch)
+ARCH=amd64
 
 CENT_EMITTER_ADDR?=0x1
 CENT_CHAIN_ID?=0x1
